@@ -1,26 +1,52 @@
-from selenium import webdriver
-from selenium.webdriver.common.by import By
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
+from bs4 import BeautifulSoup
+import requests
+import shutil
+import os
 
-driver = webdriver.Chrome('C://chromedriver.exe')
-driver.get('https://vibe.naver.com/chart/genre-DS101')
+from tkinter import *
+from PIL import ImageTk, Image
+master=Tk()
 
-driver.find_element_by_css_selector('#app > div.modal > div > div > a').click()
-songs = []
+req=requests.get('https://comic.naver.com/webtoon/detail.nhn?titleId=20853&no=1223&weekday=tue')
+html=req.text
+soup=BeautifulSoup(html, 'html.parser')
+my_titles=soup.select('#comic_view_area > div.wt_viewer > img')
 
-for i in range(1, 101):
-    button = driver.find_element_by_css_selector('#content > div.track_section > div:nth-child(1) > div > table > tbody > tr:nth-child('+str(i)+') > td.lyrics')
-    if(button.text != ''):
-        button.click()
-        lyrics = WebDriverWait(driver, 3).until(
-            EC.visibility_of_element_located((By.CSS_SELECTOR, '#app > div.modal > div > div > div.ly_contents > p > span:nth-child(2)'))
-        )
-        lyrics_data = lyrics.text.replace('\n', ' ')
-        songs.append(lyrics_data)
-        close = driver.find_element_by_css_selector('#app > div.modal > div > div > a')
-        close.click()
-    if i%10==0:
-        driver.execute_script("arguments[0].scrollIntoView(true);", button)
+directory=os.path.dirname('./img/')
 
-print(songs)
+if not os.path.exists(directory):
+    os.makedirs(directory)
+
+for i in range(len(my_titles)):
+    img=soup.find("img", {"id":"content_image_"+str(i)})
+    img_src=img.get("src")
+    img_name=str(i)+"pic"
+    r=requests.get(img_src, stream=True, headers={'User-agent':'Mozilla/5.0'})
+
+    if r.status_code==200:
+        with open('./img/'+img_name+'.png','wb') as f:
+            r.raw.decode_content=True
+            shutil.copyfileobj(r.raw, f)
+
+print(len(my_titles))
+
+img_size=Image.open("./img/0pic.png")
+
+canvas_width, canvas_height = img_size.size
+canvas_width, canvas_height = img.size
+
+
+canvas=Canvas(master, width=canvas_width, height=canvas_height)
+canvas.pack()
+
+my_images=[]
+my_image_number=0
+
+for i in range(0, len(my_titles)):
+    img
+
+
+
+
+
+master.mainloop()
